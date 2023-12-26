@@ -27,8 +27,8 @@ const outputPass = new OutputPass();
 let composer = new EffectComposer( renderer );
 
 composer.addPass( renderModel );
-composer.addPass( effectSMAA );
-composer.addPass( outputPass );
+//composer.addPass( effectSMAA );
+//composer.addPass( outputPass );
 
 scene.background = new THREE.Color( 0x1e1e1e );
 scene.environment = pmremGenerator.fromScene( new RoomEnvironment( renderer ), 0.04 ).texture;
@@ -94,7 +94,7 @@ function animate() {
     //scene.background = hdrCubeMap;
 
 
-    scene.getObjectByName("Board").position.y = 10 * params.altura;
+    scene.getObjectByName("Board").position.y = -0.05 * params.altura;
     render()
 }
 
