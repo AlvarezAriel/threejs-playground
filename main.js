@@ -17,7 +17,7 @@ const params = {
     metalness: 1.0,
     exposure: 0.5,
     background: "#a3a3a3",
-    fov: 70,
+    fov: 56,
     debug: false
 };
 
