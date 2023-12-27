@@ -4,10 +4,20 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 import { HDRCubeTextureLoader } from 'three/addons/loaders/HDRCubeTextureLoader.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+import {loadModel} from "./model.js";
+import {updateModel} from "./model.js";
+
+const params = {
+    shadows: true,
+    altura: 0.0,
+    envMap: 'HDR JPG',
+    roughness: 0.0,
+    metalness: 1.0,
+    exposure: 0.5,
+    debug: false
+};
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -15,20 +25,17 @@ const loader = new GLTFLoader();
 const clock = new THREE.Clock();
 
 const renderer = new THREE.WebGLRenderer( { antialias: true } );
+
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setPixelRatio( window.devicePixelRatio );
+renderer.toneMappingExposure = params.exposure;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
 const pmremGenerator = new THREE.PMREMGenerator( renderer );
-
 const renderModel = new RenderPass( scene, camera );
-const effectSMAA = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
-const outputPass = new OutputPass();
-
 let composer = new EffectComposer( renderer );
 
 composer.addPass( renderModel );
-//composer.addPass( effectSMAA );
-//composer.addPass( outputPass );
 
 scene.background = new THREE.Color( 0x1e1e1e );
 scene.environment = pmremGenerator.fromScene( new RoomEnvironment( renderer ), 0.04 ).texture;
@@ -40,42 +47,39 @@ camera.position.z = 5;
 
 const controls = new OrbitControls( camera, renderer.domElement );
 
-const params = {
-    shadows: true,
-    altura: 0.0,
-};
-const gui = new GUI();
-gui.add( params, 'altura', 0, 1 );
-gui.add( params, 'shadows' );
-gui.open();
+function loadGUI() {
+    const gui = new GUI();
+    gui.add( params, 'altura', 0, 1 );
+    gui.add( params, 'shadows' );
+    gui.add( params, 'exposure', 0, 5.0 );
+    gui.open();
+}
 
-loader.load( 'Desk.glb', function ( gltf ) {
-    scene.add( gltf.scene );
-}, undefined, function ( error ) {
-    console.error( error );
-} );
+function loadHDR() {
+    new HDRCubeTextureLoader()
+        .setPath( './' )
+        .load( ['small_empty_room_1_2k.hdr'], function (texture) {
+            let envMap = pmremGenerator.fromEquirectangular( texture ).texture;
 
-let hdrCubeRenderTarget;
+            scene.background = envMap;
+            scene.environment = envMap;
 
-THREE.DefaultLoadingManager.onLoad = function ( ) {
-    pmremGenerator.dispose();
-};
+            texture.dispose();
+            pmremGenerator.dispose();
+        } );
+    THREE.DefaultLoadingManager.onLoad = function ( ) {
+        pmremGenerator.dispose();
+    };
+    pmremGenerator.compileCubemapShader();
+}
 
-let hdrCubeMap = new HDRCubeTextureLoader()
-    .setPath( './' )
-    .load( ['sunset_jhbcentral_4k.exr'], function () {
-
-        hdrCubeRenderTarget = pmremGenerator.fromCubemap( hdrCubeMap );
-
-        hdrCubeMap.magFilter = THREE.LinearFilter;
-        hdrCubeMap.needsUpdate = true;
-
-    } );
-
-pmremGenerator.compileCubemapShader();
+function init() {
+    loadHDR();
+    loadGUI();
+    loadModel(loader, scene);
+}
 
 window.addEventListener( 'resize', onWindowResize );
-
 function onWindowResize() {
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -89,18 +93,21 @@ function onWindowResize() {
 
 function animate() {
     requestAnimationFrame( animate );
-    const delta = clock.getDelta();
-    controls.update(delta);
-    //scene.background = hdrCubeMap;
-
-    scene.getObjectByName("Board").position.y = 0.14 * params.altura;
-    scene.getObjectByName("Legs_01").position.y = 0.07 * params.altura;
+    update(clock.getDelta())
     render()
 }
 
+function update(delta) {
+    controls.update(delta);
+    //scene.background = hdrCubeMap;
+    renderer.toneMappingExposure = params.exposure;
+    updateModel(scene, params);
+}
+
 function render() {
-    renderer.clear();
+    //renderer.clear();
     composer.render( 0.01 );
 }
 
+init();
 animate();
