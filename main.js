@@ -47,11 +47,16 @@ document.body.appendChild( renderer.domElement );
 
 camera.position.z = 5;
 
+// control de camara
+controls.minPolarAngle = 0;
+controls.maxPolarAngle =  Math.PI * 0.5;
+// control de camara
+
 const controls = new OrbitControls( camera, renderer.domElement );
 
 function loadGUI() {
     const gui = new GUI();
-    gui.add( params, 'altura', 0, 1 );
+    gui.add( params, 'altura', 0, 2 );
     gui.add( params, 'shadows' );
     gui.add( params, 'exposure', 0, 5.0 );
     gui.add( params, 'fov', 10, 100.0 );
