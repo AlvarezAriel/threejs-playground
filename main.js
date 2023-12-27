@@ -48,7 +48,7 @@ scene.environment = pmremGenerator.fromScene( new RoomEnvironment( renderer ), 0
 renderer.autoClear = false;
 document.body.appendChild( renderer.domElement );
 
-camera.position.z = 5;
+// camera.position.z = 5;
 
 
 const controls = new OrbitControls( camera, renderer.domElement );
