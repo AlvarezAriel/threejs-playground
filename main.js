@@ -16,6 +16,7 @@ const params = {
     roughness: 0.0,
     metalness: 1.0,
     exposure: 0.5,
+    background: "#737977",
     debug: false
 };
 
@@ -37,7 +38,7 @@ let composer = new EffectComposer( renderer );
 
 composer.addPass( renderModel );
 
-scene.background = new THREE.Color( 0x1e1e1e );
+//scene.background = new THREE.Color( 0x737977 );
 scene.environment = pmremGenerator.fromScene( new RoomEnvironment( renderer ), 0.04 ).texture;
 
 renderer.autoClear = false;
@@ -52,7 +53,12 @@ function loadGUI() {
     gui.add( params, 'altura', 0, 1 );
     gui.add( params, 'shadows' );
     gui.add( params, 'exposure', 0, 5.0 );
+    gui.addColor(params, 'background').onChange( function(colorValue) {
+        scene.background = new THREE.Color( colorValue );
+    });
     gui.open();
+
+    scene.background = new THREE.Color( params.background );
 }
 
 function loadHDR() {

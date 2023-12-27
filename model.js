@@ -1,3 +1,10 @@
+import * as THREE from 'three';
+
+const uniforms = {
+    'amplitude': { value: 1.0 },
+    'color': { value: new THREE.Color( 0xff2200 ) },
+};
+
 export function loadModel(loader, scene) {
     loader.load( 'Desk.glb', function ( gltf ) {
         scene.add( gltf.scene );
@@ -5,7 +12,9 @@ export function loadModel(loader, scene) {
         console.error( error );
     } );
 
+
     loader.load( 'env.glb', function ( gltf ) {
+        gltf.scene;
         scene.add( gltf.scene );
         console.log(gltf.scene);
     }, undefined, function ( error ) {
