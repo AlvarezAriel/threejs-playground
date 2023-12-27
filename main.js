@@ -16,12 +16,13 @@ const params = {
     roughness: 0.0,
     metalness: 1.0,
     exposure: 0.5,
-    background: "#737977",
+    background: "#a3a3a3",
+    fov: 70,
     debug: false
 };
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const camera = new THREE.PerspectiveCamera( params.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
 const loader = new GLTFLoader();
 const clock = new THREE.Clock();
 
@@ -53,6 +54,7 @@ function loadGUI() {
     gui.add( params, 'altura', 0, 1 );
     gui.add( params, 'shadows' );
     gui.add( params, 'exposure', 0, 5.0 );
+    gui.add( params, 'fov', 10, 100.0 );
     gui.addColor(params, 'background').onChange( function(colorValue) {
         scene.background = new THREE.Color( colorValue );
     });
@@ -108,6 +110,10 @@ function update(delta) {
     //scene.background = hdrCubeMap;
     renderer.toneMappingExposure = params.exposure;
     updateModel(scene, params);
+
+    // Update camera
+    camera.fov = params.fov;
+    camera.updateProjectionMatrix();
 }
 
 function render() {
