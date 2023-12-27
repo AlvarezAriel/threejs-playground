@@ -93,8 +93,8 @@ function animate() {
     controls.update(delta);
     //scene.background = hdrCubeMap;
 
-
-    scene.getObjectByName("Board").position.y = -0.05 * params.altura;
+    scene.getObjectByName("Board").position.y = 0.14 * params.altura;
+    scene.getObjectByName("Legs_01").position.y = 0.07 * params.altura;
     render()
 }
 
