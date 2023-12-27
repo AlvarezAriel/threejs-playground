@@ -48,9 +48,14 @@ document.body.appendChild( renderer.domElement );
 camera.position.z = 5;
 
 // control de camara
-controls.minPolarAngle = 0;
-controls.maxPolarAngle =  Math.PI * 0.5;
+function init() {
+    
+    const controls = new OrbitControls( camera, renderer.domElement );
+    controls.addEventListener( 'change', render );
+    controls.minPolarAngle = 0;
+    controls.maxPolarAngle =  Math.PI * 0.5;
 // control de camara
+}
 
 const controls = new OrbitControls( camera, renderer.domElement );
 
