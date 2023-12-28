@@ -25,24 +25,25 @@ const params = {
     bloomRadius: 1,
 };
 
+const cameraParams = {
+    offsetY: 0,
+}
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( params.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
 camera.position.set(1.75,1.1,2.1);
-camera.lookAt(new THREE.Vector3(0,0.44,0));
-
+camera.lookAt(new THREE.Vector3(0,0,0));
 
 const loader = new GLTFLoader();
 const clock = new THREE.Clock();
 
 const renderer = new THREE.WebGLRenderer({antialias: true});
-
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.toneMappingExposure = params.exposure;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
 
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 const renderModel = new RenderPass(scene, camera);
@@ -72,8 +73,8 @@ function loadHDR() {
     new RGBELoader()
         .setPath('./')
         .load(['small_empty_room_1_2k.hdr'], function (texture) {
-            let envMap = pmremGenerator.fromEquirectangular(texture).texture;
             texture.mapping = THREE.EquirectangularReflectionMapping;
+            let envMap = pmremGenerator.fromEquirectangular(texture).texture;
 
             if(params.showHdr) {
             if(params.showHdr) {
@@ -84,11 +85,11 @@ function loadHDR() {
             }
             scene.environment = envMap;
 
-            //texture.dispose();
-            //pmremGenerator.dispose();
+            texture.dispose();
+            pmremGenerator.dispose();
         });
     THREE.DefaultLoadingManager.onLoad = function () {
-        //pmremGenerator.dispose();
+        pmremGenerator.dispose();
     };
     pmremGenerator.compileCubemapShader();
 }
@@ -122,7 +123,6 @@ function loadLights() {
 function loadGUI() {
     const gui = new GUI();
     gui.add(params, 'altura', 0, 1);
-    gui.add(params, 'shadows');
     gui.add(params, 'exposure', 0, 5.0);
     gui.add(params, 'fov', 10, 100.0);
     gui.addColor(params, 'background').onChange(function (colorValue) {
@@ -156,9 +156,12 @@ function loadGUI() {
         bloomPass.radius = value;
     });
 
-    gui.open();
+    const cameraFolder = gui.addFolder( 'Camera' );
+    cameraFolder.add(cameraParams, 'offsetY', -1, 2.5).onChange(function (value) {
+        camera.position.y = value;
+    });
 
-    //scene.background = new THREE.Color(params.background);
+    gui.open();
 }
 
 function init() {

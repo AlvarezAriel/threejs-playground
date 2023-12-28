@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export function loadModel(loader, scene) {
+export function loadModel(loader, scene, showRoom = false) {
     loader.load('Desk.glb', function (gltf) {
         applyShadows(gltf.scene);
         scene.add(gltf.scene);
@@ -9,13 +9,16 @@ export function loadModel(loader, scene) {
         console.error(error);
     });
 
-    loader.load('env.glb', function (gltf) {
-        applyShadows(gltf.scene);
-        scene.add(gltf.scene);
-        console.log("Loaded: ", gltf.scene);
-    }, undefined, function (error) {
-        console.error(error);
-    });
+    if(showRoom) {
+        loader.load('env.glb', function (gltf) {
+            applyShadows(gltf.scene);
+            gltf.scene.rotateY(2.7);
+            scene.add(gltf.scene);
+            console.log("Loaded: ", gltf.scene);
+        }, undefined, function (error) {
+            console.error(error);
+        });
+    }
 }
 
 function applyShadows(scene) {
