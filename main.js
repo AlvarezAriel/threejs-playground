@@ -23,8 +23,14 @@ const params = {
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( params.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
-camera.position.set(1.75,1.1,2.1);
+camera.position.set(1.75,1.1,-2.1);
 camera.lookAt(new THREE.Vector3(0,0.22,0));
+
+controls.mouseButtons = {
+    LEFT: THREE.MOUSE.ROTATE,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: ''
+}
 
 const loader = new GLTFLoader();
 const clock = new THREE.Clock();
@@ -52,6 +58,7 @@ document.body.appendChild( renderer.domElement );
 
 
 const controls = new OrbitControls( camera, renderer.domElement );
+
 
 function loadGUI() {
     const gui = new GUI();
