@@ -26,8 +26,9 @@ const params = {
 };
 
 const cameraParams = {
-    offsetY: 0,
-    lookAtY: 0,
+    lookAtY: 0.25,
+    offsetY: 1,
+    zoom:2.5,
 }
 
 const scene = new THREE.Scene();
@@ -66,7 +67,10 @@ controls.mouseButtons = {
     MIDDLE: THREE.MOUSE.DOLLY,
     RIGHT: ''
 }
-
+camera.zoom=cameraParams.zoom;
+camera.position.y=cameraParams.offsetY;
+controls.target.y=cameraParams.lookAtY;
+camera.updateProjectionMatrix();
 let hdrTexture = null;
 function loadHDR() {
     new RGBELoader()
@@ -165,6 +169,10 @@ function loadGUI() {
     });
     cameraFolder.add(cameraParams, 'offsetY', -1, 2.5).onChange(function (value) {
         camera.position.y = value;
+    });
+    cameraFolder.add(cameraParams, 'zoom', -1, 5).onChange(function (value) {
+        camera.zoom = value;
+        camera.updateProjectionMatrix();
     });
 
     gui.open();
