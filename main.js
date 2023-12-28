@@ -16,7 +16,7 @@ const params = {
     roughness: 0.0,
     metalness: 1.0,
     exposure: 0.5,
-    background: "#a3a3a3",
+    background: "#dfdfdf",
     fov: 56,
     debug: false
 };
@@ -24,7 +24,7 @@ const params = {
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( params.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
 camera.position.set(1.75,1.1,2.1);
-camera.lookAt(new THREE.Vector3(0,0.22,0));
+camera.lookAt(new THREE.Vector3(0,0.44,0));
 
 
 
