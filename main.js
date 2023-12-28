@@ -6,25 +6,21 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
-import {HDRCubeTextureLoader} from 'three/addons/loaders/HDRCubeTextureLoader.js';
 import {GUI} from 'three/addons/libs/lil-gui.module.min.js';
 import {loadModel} from "./model.js";
 import {updateModel} from "./model.js";
 import {CustomPostProcessing} from "./post-processing.js";
 import {Vector2} from "three";
+import {RGBELoader} from "three/addons";
 
 const params = {
-    shadows: true,
+    showHdr: true,
     altura: 0.0,
-    envMap: 'HDR JPG',
-    roughness: 0.0,
-    metalness: 1.0,
     exposure: 0.5,
-    background: "#dfdfdf",
+    background: "#C6BDB3",
     lightIntensity: 100,
     lightColor: "#ffffff",
     fov: 56,
-    debug: false,
     bloomStrength: 0.2,
     bloomRadius: 1,
 };
@@ -63,9 +59,6 @@ scene.environment = pmremGenerator.fromScene(new RoomEnvironment(renderer), 0.04
 renderer.autoClear = false;
 document.body.appendChild(renderer.domElement);
 
-// camera.position.z = 5;
-
-
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.mouseButtons = {
     LEFT: THREE.MOUSE.ROTATE,
@@ -73,20 +66,29 @@ controls.mouseButtons = {
     RIGHT: ''
 }
 
+
+let hdrTexture = null;
 function loadHDR() {
-    new HDRCubeTextureLoader()
+    new RGBELoader()
         .setPath('./')
         .load(['small_empty_room_1_2k.hdr'], function (texture) {
             let envMap = pmremGenerator.fromEquirectangular(texture).texture;
+            texture.mapping = THREE.EquirectangularReflectionMapping;
 
-            scene.background = envMap;
+            if(params.showHdr) {
+            if(params.showHdr) {
+                hdrTexture = texture;
+                scene.background = texture;
+            } else {
+                scene.background = new THREE.Color(params.background);}
+            }
             scene.environment = envMap;
 
-            texture.dispose();
-            pmremGenerator.dispose();
+            //texture.dispose();
+            //pmremGenerator.dispose();
         });
     THREE.DefaultLoadingManager.onLoad = function () {
-        pmremGenerator.dispose();
+        //pmremGenerator.dispose();
     };
     pmremGenerator.compileCubemapShader();
 }
@@ -124,8 +126,21 @@ function loadGUI() {
     gui.add(params, 'exposure', 0, 5.0);
     gui.add(params, 'fov', 10, 100.0);
     gui.addColor(params, 'background').onChange(function (colorValue) {
-        scene.background = new THREE.Color(colorValue);
+        if(!params.showHdr) {
+            scene.background = new THREE.Color(colorValue);
+        }
     });
+    gui.add(params, 'showHdr').onChange(function (show) {
+        if(!params.showHdr) {
+            if(show) {
+                scene.background = hdrTexture;
+                pmremGenerator.compileCubemapShader();
+            } else {
+                scene.background = new THREE.Color(params.background);
+            }
+        }
+    });
+
 
     const folder = gui.addFolder( 'Light' );
     folder.add(params, 'lightIntensity', 0, 500.0).onChange(function (value) {
@@ -143,7 +158,7 @@ function loadGUI() {
 
     gui.open();
 
-    scene.background = new THREE.Color(params.background);
+    //scene.background = new THREE.Color(params.background);
 }
 
 function init() {
@@ -175,7 +190,11 @@ function animate() {
 
 function update(delta) {
     controls.update(delta);
-    //scene.background = hdrCubeMap;
+    if(params.showHdr) {
+        scene.background = hdrTexture;
+    } else {
+        scene.background = new THREE.Color(params.background);
+    }
     renderer.toneMappingExposure = params.exposure;
     updateModel(scene, params);
 
