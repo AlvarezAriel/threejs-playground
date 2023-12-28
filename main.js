@@ -27,12 +27,12 @@ const params = {
 
 const cameraParams = {
     offsetY: 0,
+    lookAtY: 0,
 }
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( params.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
-camera.position.set(1.75,1.1,2.2);
-camera.lookAt(new THREE.Vector3(0,0,0));
+camera.position.set(1.75,1.1,2.1);
 
 const loader = new GLTFLoader();
 const clock = new THREE.Clock();
