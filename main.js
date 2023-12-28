@@ -18,7 +18,7 @@ const params = {
     roughness: 0.0,
     metalness: 1.0,
     exposure: 0.5,
-    background: "#a3a3a3",
+    background: "#dfdfdf",
     lightIntensity: 100,
     lightColor: "#ffffff",
     fov: 56,
@@ -26,7 +26,12 @@ const params = {
 };
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(params.fov, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera( params.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
+camera.position.set(1.75,1.1,2.1);
+camera.lookAt(new THREE.Vector3(0,0.44,0));
+
+
+
 const loader = new GLTFLoader();
 const clock = new THREE.Clock();
 
@@ -51,9 +56,15 @@ scene.environment = pmremGenerator.fromScene(new RoomEnvironment(renderer), 0.04
 renderer.autoClear = false;
 document.body.appendChild(renderer.domElement);
 
-camera.position.z = 5;
+// camera.position.z = 5;
+
 
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.mouseButtons = {
+    LEFT: THREE.MOUSE.ROTATE,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: ''
+}
 
 function loadHDR() {
     new HDRCubeTextureLoader()
