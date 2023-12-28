@@ -3,13 +3,15 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {HDRCubeTextureLoader} from 'three/addons/loaders/HDRCubeTextureLoader.js';
 import {GUI} from 'three/addons/libs/lil-gui.module.min.js';
-import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
-import {RectAreaLightHelper} from 'three/addons/helpers/RectAreaLightHelper.js';
 import {loadModel} from "./model.js";
 import {updateModel} from "./model.js";
+import {CustomPostProcessing} from "./post-processing.js";
+import {Vector2} from "three";
 
 const params = {
     shadows: true,
@@ -22,14 +24,15 @@ const params = {
     lightIntensity: 100,
     lightColor: "#ffffff",
     fov: 56,
-    debug: false
+    debug: false,
+    bloomStrength: 0.2,
+    bloomRadius: 1,
 };
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( params.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
 camera.position.set(1.75,1.1,2.1);
 camera.lookAt(new THREE.Vector3(0,0.44,0));
-
 
 
 const loader = new GLTFLoader();
@@ -44,11 +47,15 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 const renderModel = new RenderPass(scene, camera);
 let composer = new EffectComposer(renderer);
-
+const customPostProcessingPass = new ShaderPass( CustomPostProcessing );
+const bloomPass = new UnrealBloomPass( new Vector2( 256, 256 ),  0.2,  1);
 composer.addPass(renderModel);
+composer.addPass(bloomPass);
+//composer.addPass(customPostProcessingPass);
 
 //scene.background = new THREE.Color( 0x737977 );
 scene.environment = pmremGenerator.fromScene(new RoomEnvironment(renderer), 0.04).texture;
@@ -105,6 +112,7 @@ function loadLights() {
 
     spotLight.lookAt(0,0,0);
 
+    spotLightHelper.color = 0xff0000;
     scene.add( spotLight );
     scene.add( spotLightHelper );
 }
@@ -125,6 +133,12 @@ function loadGUI() {
     });
     folder.addColor(params, 'lightColor').onChange(function (colorValue) {
         spotLight.color = new THREE.Color(colorValue);
+    });
+    folder.add(params, 'bloomStrength').onChange(function (value) {
+        bloomPass.strength = value;
+    });
+    folder.add(params, 'bloomRadius').onChange(function (value) {
+        bloomPass.radius = value;
     });
 
     gui.open();
@@ -154,8 +168,9 @@ function onWindowResize() {
 
 function animate() {
     requestAnimationFrame(animate);
-    update(clock.getDelta())
-    render()
+    const delta = clock.getDelta();
+    update(delta)
+    render(delta)
 }
 
 function update(delta) {
@@ -174,9 +189,9 @@ function update(delta) {
     spotLightHelper.update();
 }
 
-function render() {
+function render(delta) {
     //renderer.clear();
-    composer.render(0.01);
+    composer.render(delta);
 }
 
 init();
