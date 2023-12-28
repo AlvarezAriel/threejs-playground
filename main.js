@@ -27,12 +27,12 @@ const params = {
 
 const cameraParams = {
     offsetY: 0,
+    lookAtY: 0,
 }
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( params.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
 camera.position.set(1.75,1.1,2.1);
-camera.lookAt(new THREE.Vector3(0,0,0));
 
 const loader = new GLTFLoader();
 const clock = new THREE.Clock();
@@ -66,7 +66,6 @@ controls.mouseButtons = {
     MIDDLE: THREE.MOUSE.DOLLY,
     RIGHT: ''
 }
-
 
 let hdrTexture = null;
 function loadHDR() {
@@ -123,8 +122,13 @@ function loadLights() {
 function loadGUI() {
     const gui = new GUI();
     gui.add(params, 'altura', 0, 1);
-    gui.add(params, 'exposure', 0, 5.0);
-    gui.add(params, 'fov', 10, 100.0);
+    gui.add(params, 'exposure', 0, 5.0).onChange(function (value) {
+        renderer.toneMappingExposure = value;
+    });
+    gui.add(params, 'fov', 10, 100.0).onChange(function (value) {
+        camera.fov = params.fov;
+        camera.updateProjectionMatrix();
+    });
     gui.addColor(params, 'background').onChange(function (colorValue) {
         if(!params.showHdr) {
             scene.background = new THREE.Color(colorValue);
@@ -141,7 +145,6 @@ function loadGUI() {
         }
     });
 
-
     const folder = gui.addFolder( 'Light' );
     folder.add(params, 'lightIntensity', 0, 500.0).onChange(function (value) {
         spotLight.intensity = value;
@@ -157,6 +160,9 @@ function loadGUI() {
     });
 
     const cameraFolder = gui.addFolder( 'Camera' );
+    cameraFolder.add(cameraParams, 'lookAtY', -1, 2.5).onChange(function (value) {
+        controls.target.y = value;
+    });
     cameraFolder.add(cameraParams, 'offsetY', -1, 2.5).onChange(function (value) {
         camera.position.y = value;
     });
@@ -193,17 +199,7 @@ function animate() {
 
 function update(delta) {
     controls.update(delta);
-    if(params.showHdr) {
-        scene.background = hdrTexture;
-    } else {
-        scene.background = new THREE.Color(params.background);
-    }
-    renderer.toneMappingExposure = params.exposure;
     updateModel(scene, params);
-
-    // Update camera
-    camera.fov = params.fov;
-    camera.updateProjectionMatrix();
 
     const time = performance.now() / 3000;
     spotLight.position.z = Math.cos( time ) * 2.5;
