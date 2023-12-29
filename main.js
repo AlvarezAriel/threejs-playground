@@ -10,7 +10,7 @@ import {GUI} from 'three/addons/libs/lil-gui.module.min.js';
 import {loadModel} from "./model.js";
 import {updateModel} from "./model.js";
 import {CustomPostProcessing} from "./post-processing.js";
-import {Vector2} from "three";
+import {PlaneGeometry, Vector2} from "three";
 import {RGBELoader} from "three/addons";
 import mathNode from "three/addons/nodes/math/MathNode.js";
 
@@ -24,7 +24,7 @@ const params = {
     lightColor: "#ffffff",
     fov: 56,
     bloomStrength: 0.2,
-    bloomRadius: 1,
+    bloomRadius: 0.2,
 };
 
 const cameraParams = {
@@ -52,7 +52,7 @@ const pmremGenerator = new THREE.PMREMGenerator(renderer);
 const renderModel = new RenderPass(scene, camera);
 let composer = new EffectComposer(renderer);
 const customPostProcessingPass = new ShaderPass( CustomPostProcessing );
-const bloomPass = new UnrealBloomPass( new Vector2( 256, 256 ),  0.2,  1);
+const bloomPass = new UnrealBloomPass( new Vector2( 256, 256 ),  0.2,  0.2);
 composer.addPass(renderModel);
 composer.addPass(bloomPass);
 //composer.addPass(customPostProcessingPass);
@@ -111,6 +111,8 @@ function loadHDR() {
 
 const spotLight = new THREE.SpotLight( params.lightColor,  params.lightIntensity);
 const spotLightHelper = new THREE.SpotLightHelper( spotLight );
+
+
 function loadLights() {
 
     spotLight.position.set( -3, 3, 0 );
@@ -137,7 +139,7 @@ function loadLights() {
 
 function loadGUI() {
     const gui = new GUI();
-    gui.add(params, 'altura', 0, 1);
+    gui.add(params, 'altura', 0, 2);
     gui.add(params, 'drawer', 0, 0.1);
     gui.add(params, 'exposure', 0, 5.0);
     gui.add(params, 'fov', 10, 100.0);
@@ -234,6 +236,8 @@ function render(delta) {
     //renderer.clear();
     composer.render(delta);
 }
+
+
 
 init();
 animate();
