@@ -12,6 +12,7 @@ import {updateModel} from "./model.js";
 import {CustomPostProcessing} from "./post-processing.js";
 import {Vector2} from "three";
 import {RGBELoader} from "three/addons";
+import mathNode from "three/addons/nodes/math/MathNode.js";
 
 const params = {
     showHdr: true,
@@ -67,6 +68,16 @@ controls.mouseButtons = {
     MIDDLE: THREE.MOUSE.DOLLY,
     RIGHT: ''
 }
+//máxima distancia de la cámara
+controls.rotateSpeed = 0.6;
+controls.minDistance = 1.5;
+controls.maxDistance = 4;
+controls.enableDamping = true;
+//controls.dampingFactor = 0.1;
+controls.minPolarAngle = Math.PI / 6;
+controls.maxPolarAngle = Math.PI / 2;
+
+
 camera.zoom=cameraParams.zoom;
 camera.position.y=cameraParams.offsetY;
 controls.target.y=cameraParams.lookAtY;
