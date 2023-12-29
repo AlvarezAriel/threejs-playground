@@ -15,11 +15,11 @@ import {RGBELoader} from "three/addons";
 import mathNode from "three/addons/nodes/math/MathNode.js";
 
 const params = {
-    showHdr: true,
+    showHdr: false,
     altura: 0.0,
     drawer: 0,
     exposure: 0.5,
-    background: "#C6BDB3",
+    background: "#cfcfcf",
     lightIntensity: 100,
     lightColor: "#ffffff",
     fov: 56,
@@ -186,7 +186,7 @@ function loadGUI() {
 function init() {
     loadHDR();
     loadGUI();
-    loadLights();
+
     loadModel(loader, scene);
 }
 
