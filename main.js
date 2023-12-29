@@ -17,6 +17,7 @@ import mathNode from "three/addons/nodes/math/MathNode.js";
 const params = {
     showHdr: true,
     altura: 0.0,
+    drawer: 0,
     exposure: 0.5,
     background: "#C6BDB3",
     lightIntensity: 100,
@@ -137,6 +138,7 @@ function loadLights() {
 function loadGUI() {
     const gui = new GUI();
     gui.add(params, 'altura', 0, 1);
+    gui.add(params, 'drawer', 0, 0.1);
     gui.add(params, 'exposure', 0, 5.0);
     gui.add(params, 'fov', 10, 100.0);
     gui.addColor(params, 'background').onChange(function (colorValue) {

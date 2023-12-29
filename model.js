@@ -44,4 +44,9 @@ export function updateModel(scene, state) {
     if (legs) {
         legs.position.y = 0.07 * state.altura;
     }
+
+    let drawer = scene.getObjectByName("drawer");
+    if (drawer) {
+        drawer.position.z = state.drawer;
+    }
 }
