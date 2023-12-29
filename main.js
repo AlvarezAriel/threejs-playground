@@ -12,6 +12,7 @@ import {updateModel} from "./model.js";
 import {CustomPostProcessing} from "./post-processing.js";
 import {Vector2} from "three";
 import {RGBELoader} from "three/addons";
+import mathNode from "three/addons/nodes/math/MathNode.js";
 
 const params = {
     showHdr: true,
@@ -67,6 +68,16 @@ controls.mouseButtons = {
     MIDDLE: THREE.MOUSE.DOLLY,
     RIGHT: ''
 }
+//máxima distancia de la cámara
+controls.rotateSpeed = 0.6;
+controls.minDistance = 1.5;
+controls.maxDistance = 4;
+controls.enableDamping = true;
+//controls.dampingFactor = 0.1;
+controls.minPolarAngle = Math.PI / 6;
+controls.maxPolarAngle = Math.PI / 2;
+
+
 camera.zoom=cameraParams.zoom;
 camera.position.y=cameraParams.offsetY;
 controls.target.y=cameraParams.lookAtY;
@@ -126,13 +137,8 @@ function loadLights() {
 function loadGUI() {
     const gui = new GUI();
     gui.add(params, 'altura', 0, 1);
-    gui.add(params, 'exposure', 0, 5.0).onChange(function (value) {
-        renderer.toneMappingExposure = value;
-    });
-    gui.add(params, 'fov', 10, 100.0).onChange(function (value) {
-        camera.fov = params.fov;
-        camera.updateProjectionMatrix();
-    });
+    gui.add(params, 'exposure', 0, 5.0);
+    gui.add(params, 'fov', 10, 100.0);
     gui.addColor(params, 'background').onChange(function (colorValue) {
         if(!params.showHdr) {
             scene.background = new THREE.Color(colorValue);
@@ -164,9 +170,6 @@ function loadGUI() {
     });
 
     const cameraFolder = gui.addFolder( 'Camera' );
-    cameraFolder.add(cameraParams, 'lookAtY', -1, 2.5).onChange(function (value) {
-        controls.target.y = value;
-    });
     cameraFolder.add(cameraParams, 'offsetY', -1, 2.5).onChange(function (value) {
         camera.position.y = value;
     });
@@ -207,7 +210,17 @@ function animate() {
 
 function update(delta) {
     controls.update(delta);
+    if(params.showHdr) {
+        scene.background = hdrTexture;
+    } else {
+        scene.background = new THREE.Color(params.background);
+    }
+    renderer.toneMappingExposure = params.exposure;
     updateModel(scene, params);
+
+    // Update camera
+    camera.fov = params.fov;
+    camera.updateProjectionMatrix();
 
     const time = performance.now() / 3000;
     spotLight.position.z = Math.cos( time ) * 2.5;
