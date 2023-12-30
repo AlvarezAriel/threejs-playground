@@ -75,9 +75,12 @@ controls.minDistance = 1.5;
 controls.maxDistance = 4;
 controls.enableDamping = true;
 //controls.dampingFactor = 0.1;
+//Limite Vertical de la rotación
 controls.minPolarAngle = Math.PI / 6;
 controls.maxPolarAngle = Math.PI / 2;
-
+//Limite Horizontal de la rotación
+controls.minAzimuthAngle = Math.PI / -1.5;
+controls.maxAzimuthAngle = Math.PI / 1.5;
 
 camera.zoom=cameraParams.zoom;
 camera.position.y=cameraParams.offsetY;
