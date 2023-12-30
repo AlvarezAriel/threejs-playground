@@ -8,6 +8,7 @@ const guiData = {
     fillShapesWireframe: false,
     strokesWireframe: false
 };
+const group = new THREE.Group();
 
 export function loadModel(loader, scene, showRoom = false) {
     loader.load('Desk.glb', function (gltf) {
@@ -63,6 +64,8 @@ export function updateModel(scene, state) {
     if (drawer) {
         drawer.position.z = state.drawer;
     }
+
+    group.lookAt(state.cameraPosition);
 }
 
 
@@ -74,11 +77,8 @@ function loadSVG(scene, url) {
     const loader = new SVGLoader();
 
     loader.load(url, function (data) {
-
-        const group = new THREE.Group();
-
         const svgScale = 1 / 5000;
-        group.position.x = 0.55;
+        group.position.x = 0.53;
         group.position.y = 0.56;
         group.position.z = 0.32;
         group.scale.set(svgScale,svgScale,svgScale);

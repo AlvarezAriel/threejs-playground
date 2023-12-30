@@ -25,6 +25,7 @@ const params = {
     fov: 56,
     bloomStrength: 0.1,
     bloomRadius: 0.2,
+    cameraPosition: null,
 };
 
 const cameraParams = {
@@ -36,6 +37,7 @@ const cameraParams = {
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( params.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
 camera.position.set(1.75,1.1,2.1);
+params.cameraPosition = camera.position;
 
 const loader = new GLTFLoader();
 const clock = new THREE.Clock();
@@ -221,6 +223,8 @@ function update(delta) {
         scene.background = new THREE.Color(params.background);
     }
     renderer.toneMappingExposure = params.exposure;
+    params.cameraPosition = camera.position;
+
     updateModel(scene, params);
 
     // Update camera
