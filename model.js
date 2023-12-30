@@ -78,9 +78,9 @@ function loadSVG(scene, url) {
 
     loader.load(url, function (data) {
         const svgScale = 1 / 5000;
-        group.position.x = 0.53;
+        group.position.x = 0.50;
         group.position.y = 0.56;
-        group.position.z = 0.32;
+        group.position.z = 0.27;
         group.scale.set(svgScale,svgScale,svgScale);
         group.rotateX(Math.PI / 2);
 

@@ -13,6 +13,7 @@ import {CustomPostProcessing} from "./post-processing.js";
 import {PlaneGeometry, Vector2} from "three";
 import {RGBELoader} from "three/addons";
 import mathNode from "three/addons/nodes/math/MathNode.js";
+import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 
 const params = {
     showHdr: false,
@@ -42,7 +43,7 @@ params.cameraPosition = camera.position;
 const loader = new GLTFLoader();
 const clock = new THREE.Clock();
 
-const renderer = new THREE.WebGLRenderer({antialias: true});
+const renderer = new THREE.WebGLRenderer({antialias: false});
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.toneMappingExposure = params.exposure;
@@ -55,7 +56,10 @@ const renderModel = new RenderPass(scene, camera);
 let composer = new EffectComposer(renderer);
 const customPostProcessingPass = new ShaderPass( CustomPostProcessing );
 const bloomPass = new UnrealBloomPass( new Vector2( 256, 256 ),  0.2,  0.2);
+const fxaaPass = new ShaderPass( FXAAShader );
+
 composer.addPass(renderModel);
+composer.addPass(fxaaPass);
 composer.addPass(bloomPass);
 //composer.addPass(customPostProcessingPass);
 
