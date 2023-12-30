@@ -55,6 +55,11 @@ export function updateModel(scene, state) {
         board.position.y = 0.14 * state.altura;
     }
 
+    let woodenTable = scene.getObjectByName("WoodenTable");
+    if (woodenTable) {
+        woodenTable.scale.x = state.boardScale;
+    }
+
     let legs = scene.getObjectByName("Legs_01");
     if (legs) {
         legs.position.y = 0.07 * state.altura;

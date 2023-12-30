@@ -18,6 +18,7 @@ import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 const params = {
     showHdr: false,
     altura: 0.0,
+    boardScale: 1.0,
     drawer: 0,
     exposure: 1,
     background: "#cfcfcf",
@@ -55,9 +56,11 @@ const pmremGenerator = new THREE.PMREMGenerator(renderer);
 const renderModel = new RenderPass(scene, camera);
 let composer = new EffectComposer(renderer);
 const customPostProcessingPass = new ShaderPass( CustomPostProcessing );
-const bloomPass = new UnrealBloomPass( new Vector2( 256, 256 ),  0.2,  0.2);
+const bloomPass = new UnrealBloomPass( new Vector2( 1024, 1024 ),  0.2,  0.2);
 const fxaaPass = new ShaderPass( FXAAShader );
-
+const pixelRatio = new THREE.Vector2();
+renderer.getDrawingBufferSize( pixelRatio );
+fxaaPass.uniforms['resolution'].value.set(1 / (pixelRatio.x * 0.9), 1 / (pixelRatio.y * 0.9) );
 composer.addPass(renderModel);
 composer.addPass(fxaaPass);
 composer.addPass(bloomPass);
@@ -147,6 +150,7 @@ function loadLights() {
 function loadGUI() {
     const gui = new GUI();
     gui.add(params, 'altura', 0, 2);
+    gui.add(params, 'boardScale', 0.5, 2);
     gui.add(params, 'drawer', 0, 0.1);
     gui.add(params, 'exposure', 0, 5.0);
     gui.add(params, 'fov', 10, 100.0);
