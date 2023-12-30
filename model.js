@@ -94,7 +94,7 @@ function loadSVG(scene, url) {
 
                 const material = new THREE.MeshBasicMaterial({
                     color: new THREE.Color().setStyle(fillColor),
-                    opacity: path.userData.style.fillOpacity,
+                    opacity: path.userData.style.fillOpacity * 0.6,
                     transparent: true,
                     side: THREE.DoubleSide,
                     depthWrite: false,
