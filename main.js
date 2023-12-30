@@ -15,7 +15,7 @@ import {RGBELoader} from "three/addons";
 import mathNode from "three/addons/nodes/math/MathNode.js";
 
 const params = {
-    showHdr: true,
+    showHdr: false,
     altura: 0.0,
     drawer: 0,
     exposure: 1,

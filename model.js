@@ -34,6 +34,7 @@ function applyShadows(scene) {
     });
 }
 
+
 export function updateModel(scene, state) {
     let board = scene.getObjectByName("Board");
     if (board) {
@@ -45,7 +46,7 @@ export function updateModel(scene, state) {
         legs.position.y = 0.07 * state.altura;
     }
 
-    let drawer = scene.getObjectByName("drawer");
+    let drawer = scene.getObjectByName("drawer_01");
     if (drawer) {
         drawer.position.z = state.drawer;
     }
