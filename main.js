@@ -18,12 +18,12 @@ const params = {
     showHdr: true,
     altura: 0.0,
     drawer: 0,
-    exposure: 0.5,
+    exposure: 1,
     background: "#cfcfcf",
     lightIntensity: 100,
     lightColor: "#ffffff",
     fov: 56,
-    bloomStrength: 0.2,
+    bloomStrength: 0.1,
     bloomRadius: 0.2,
 };
 
@@ -90,7 +90,7 @@ let hdrTexture = null;
 function loadHDR() {
     new RGBELoader()
         .setPath('./')
-        .load(['test.hdr'], function (texture) {
+        .load(['poly_haven_studio_1k.hdr'], function (texture) {
             texture.mapping = THREE.EquirectangularReflectionMapping;
             let envMap = pmremGenerator.fromEquirectangular(texture).texture;
 
