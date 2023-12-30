@@ -15,7 +15,7 @@ import {RGBELoader} from "three/addons";
 import mathNode from "three/addons/nodes/math/MathNode.js";
 
 const params = {
-    showHdr: false,
+    showHdr: true,
     altura: 0.0,
     drawer: 0,
     exposure: 0.5,
@@ -87,7 +87,7 @@ let hdrTexture = null;
 function loadHDR() {
     new RGBELoader()
         .setPath('./')
-        .load(['small_empty_room_1_2k.hdr'], function (texture) {
+        .load(['test.hdr'], function (texture) {
             texture.mapping = THREE.EquirectangularReflectionMapping;
             let envMap = pmremGenerator.fromEquirectangular(texture).texture;
 
@@ -111,8 +111,6 @@ function loadHDR() {
 
 const spotLight = new THREE.SpotLight( params.lightColor,  params.lightIntensity);
 const spotLightHelper = new THREE.SpotLightHelper( spotLight );
-
-
 function loadLights() {
 
     spotLight.position.set( -3, 3, 0 );
