@@ -1,6 +1,13 @@
 import * as THREE from 'three';
-import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+import {SVGLoader} from 'three/addons/loaders/SVGLoader.js';
 
+const guiData = {
+    currentURL: 'boton_elevador.svg',
+    drawFillShapes: true,
+    drawStrokes: true,
+    fillShapesWireframe: false,
+    strokesWireframe: false
+};
 
 export function loadModel(loader, scene, showRoom = false) {
     loader.load('Desk.glb', function (gltf) {
@@ -11,7 +18,7 @@ export function loadModel(loader, scene, showRoom = false) {
         console.error(error);
     });
 
-    if(showRoom) {
+    if (showRoom) {
         loader.load('env.glb', function (gltf) {
             applyShadows(gltf.scene);
             gltf.scene.rotateY(2.7);
@@ -21,72 +28,9 @@ export function loadModel(loader, scene, showRoom = false) {
             console.error(error);
         });
     }
-    // instantiate a loader
-    const loadersvg = new SVGLoader();
-
-// load a SVG resource
-
-    loadersvg.load(
-        // resource URL
-        'boton_elevador.svg',
-        // called when the resource is loaded
-        function ( data ) {
-
-            const paths = data.paths;
-            const group = new THREE.Group();
-            group.scale.multiplyScalar( .1 );
-            group.position.x = 0.55;
-            group.position.y = 0.56;
-            group.position.z = 0.3;
 
 
-            for ( let i = 0; i < paths.length; i ++ ) {
-                console.log('cargo bien');
-                const path = paths[ i ];
-
-                const material = new THREE.MeshBasicMaterial( {
-                    color: path.color,
-                    side: THREE.DoubleSide,
-                    depthWrite: false
-                } );
-
-                const shapes = SVGLoader.createShapes( path );
-
-                for ( let j = 0; j < shapes.length; j ++ ) {
-
-                    const shape = shapes[ j ];
-                    const geometry = new THREE.ShapeGeometry( shape );
-                    const mesh = new THREE.Mesh( geometry, material );
-                    group.add( mesh );
-
-                }
-
-            }
-
-
-            scene.add( group );
-            console.log(group);
-
-            const box = new THREE.Box3();
-            box.setFromCenterAndSize( group.position, group.scale );
-
-            const helper = new THREE.Box3Helper( box, 0xffff00 );
-            scene.add( helper );
-
-        },
-        // called when loading is in progresses
-        function ( xhr ) {
-
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-        },
-        // called when loading has errors
-        function ( error ) {
-
-            console.log( 'An error happened', error );
-
-        }
-    );
+    loadSVG(scene, guiData.currentURL);
 
 }
 
@@ -119,4 +63,88 @@ export function updateModel(scene, state) {
     if (drawer) {
         drawer.position.z = state.drawer;
     }
+}
+
+
+function loadSVG(scene, url) {
+    const helper = new THREE.GridHelper(160, 10, 0x8d8d8d, 0xc1c1c1);
+    helper.rotation.x = Math.PI / 2;
+    scene.add(helper);
+
+    const loader = new SVGLoader();
+
+    loader.load(url, function (data) {
+
+        const group = new THREE.Group();
+
+        const svgScale = 1 / 5000;
+        group.position.x = 0.55;
+        group.position.y = 0.56;
+        group.position.z = 0.32;
+        group.scale.set(svgScale,svgScale,svgScale);
+        group.rotateX(Math.PI / 2);
+
+        let renderOrder = 0;
+
+        for (const path of data.paths) {
+
+            const fillColor = path.userData.style.fill;
+
+            if (guiData.drawFillShapes && fillColor !== undefined && fillColor !== 'none') {
+
+                const material = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setStyle(fillColor),
+                    opacity: path.userData.style.fillOpacity,
+                    transparent: true,
+                    side: THREE.DoubleSide,
+                    depthWrite: false,
+                    wireframe: guiData.fillShapesWireframe
+                });
+
+                const shapes = SVGLoader.createShapes(path);
+
+                for (const shape of shapes) {
+
+                    const geometry = new THREE.ShapeGeometry(shape);
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.renderOrder = renderOrder++;
+
+                    group.add(mesh);
+
+                }
+
+            }
+
+            const strokeColor = path.userData.style.stroke;
+
+            if (guiData.drawStrokes && strokeColor !== undefined && strokeColor !== 'none') {
+
+                const material = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setStyle(strokeColor),
+                    opacity: path.userData.style.strokeOpacity,
+                    transparent: true,
+                    side: THREE.DoubleSide,
+                    depthWrite: false,
+                    wireframe: guiData.strokesWireframe
+                });
+
+                for (const subPath of path.subPaths) {
+
+                    const geometry = SVGLoader.pointsToStroke(subPath.getPoints(), path.userData.style);
+
+                    if (geometry) {
+                        const mesh = new THREE.Mesh(geometry, material);
+                        mesh.renderOrder = renderOrder++;
+
+                        group.add(mesh);
+                    }
+
+                }
+
+            }
+
+        }
+
+        scene.add(group);
+    });
 }
