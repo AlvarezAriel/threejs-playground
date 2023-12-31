@@ -9,7 +9,7 @@ import {loadModel} from "./model.js";
 import {updateModel} from "./model.js";
 import {CustomPostProcessing} from "./post-processing.js";
 import {PlaneGeometry, sRGBEncoding, Vector2} from "three";
-import {GammaCorrectionShader, RGBELoader} from "three/addons";
+import {GammaCorrectionShader, RectAreaLightHelper, RGBELoader} from "three/addons";
 import {SMAAPass} from 'three/addons/postprocessing/SMAAPass.js';
 import { SSAARenderPass } from 'three/addons/postprocessing/SSAARenderPass.js';
 import {SSRPass} from 'three/addons/postprocessing/SSRPass.js';
@@ -39,7 +39,7 @@ const params = {
     altura: 0.0,
     boardScale: 1.0,
     drawer: 0,
-    exposure: 1,
+    exposure: 0.7,
     background: "#ffffff",
     lightIntensity: 100,
     lightColor: "#ffffff",
@@ -75,8 +75,8 @@ renderer.setPixelRatio(1.5);
 renderer.toneMappingExposure = params.exposure;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.outputEncoding = sRGBEncoding
-//renderer.shadowMap.enabled = true;
-//renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.getDrawingBufferSize(pixelRatio);
 
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -141,7 +141,7 @@ composer.addPass(new EffectPass(camera,
     //
     //new NoiseEffect(),
     new SMAAEffect({ preset: SMAAPreset.ULTRA, edgeDetectionMode: EdgeDetectionMode.DEPTH}),
-    new SSAOEffect(),
+    new SSAOEffect(camera),
     new BloomEffect({radius: 2, intensity: 0.1}),
     new VignetteEffect(),
     // new BrightnessContrastEffect(),
@@ -211,26 +211,28 @@ const spotLightHelper = new THREE.SpotLightHelper(spotLight);
 
 function loadLights() {
 
-    spotLight.position.set(-3, 3, 0);
-    spotLight.map = new THREE.TextureLoader().load("fabric_texture.jpg");
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(ambientLight);
+
+    spotLight.position.set(-2, 4, 0);
     spotLight.angle = 10;
     spotLight.castShadow = true;
-    spotLight.distance = 20;
+    spotLight.distance = 12;
 
     renderer.shadowMap.enabled = true;
-    spotLight.shadow.mapSize.width = 1024;
-    spotLight.shadow.mapSize.height = 1024;
+    spotLight.shadow.mapSize.width = 2048*2;
+    spotLight.shadow.mapSize.height = 2048*2;
 
-    spotLight.shadow.camera.near = 0.5; // default
-    spotLight.shadow.camera.far = 500; // default
-    spotLight.shadow.camera.fov = 90;
+    spotLight.shadow.camera.near = 0.1; // default
+    spotLight.shadow.camera.far = 50; // default
+    spotLight.shadow.camera.fov = params.fov;
     spotLight.shadow.focus = 1;
 
     spotLight.lookAt(0, 0, 0);
 
     spotLightHelper.color = 0xff0000;
     scene.add(spotLight);
-    scene.add(spotLightHelper);
+    //scene.add(spotLightHelper);
 }
 
 function loadGUI() {
@@ -285,7 +287,7 @@ function loadGUI() {
 function init() {
     loadHDR();
     loadGUI();
-
+    loadLights();
     loadModel(loader, scene);
 }
 
@@ -319,7 +321,7 @@ function update(delta) {
     renderer.toneMappingExposure = params.exposure;
     params.cameraPosition = camera.position;
 
-    updateModel(scene, params);
+    updateModel(scene, params, camera);
 
     // Update camera
     camera.fov = params.fov;

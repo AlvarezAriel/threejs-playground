@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {SVGLoader} from 'three/addons/loaders/SVGLoader.js';
+import {MathUtils, MeshLambertMaterial} from "three";
 
 const guiData = {
     currentURL: 'boton_elevador.svg',
@@ -9,6 +10,7 @@ const guiData = {
     strokesWireframe: false
 };
 const group = new THREE.Group();
+const svgScale = 1 / 5000;
 
 export function loadModel(loader, scene, showRoom = false) {
     loader.load('Desk.glb', function (gltf) {
@@ -30,6 +32,17 @@ export function loadModel(loader, scene, showRoom = false) {
         });
     }
 
+    const geometry = new THREE.PlaneGeometry( 10, 10 );
+
+    const material = new THREE.MeshLambertMaterial({
+        color: 0xFFFFFF,
+        side: THREE.DoubleSide,
+        wireframe: false
+    });
+    const plane = new THREE.Mesh( geometry, material );
+    geometry.rotateX(-Math.PI / 2);
+    plane.receiveShadow = true;
+    scene.add( plane );
 
     loadSVG(scene, guiData.currentURL);
 
@@ -42,14 +55,14 @@ function applyShadows(scene) {
 
             child.castShadow = true;
 
-            child.receiveShadow = false;
+            child.receiveShadow = true;
 
         }
     });
 }
 
 
-export function updateModel(scene, state) {
+export function updateModel(scene, state, camera) {
     let board = scene.getObjectByName("Board");
     if (board) {
         board.position.y = 0.14 * state.altura;
@@ -70,6 +83,18 @@ export function updateModel(scene, state) {
         drawer.position.z = state.drawer;
     }
 
+    //0.8 3.35
+    let distance = camera.position.distanceTo(group.position);
+
+    let scale = MathUtils.mapLinear(
+        distance,
+        0.8,
+        3.35,
+        svgScale,
+        svgScale * 2,
+    );
+
+    group.scale.set(scale,scale,scale);
     group.lookAt(state.cameraPosition);
 }
 
@@ -82,10 +107,9 @@ function loadSVG(scene, url) {
     const loader = new SVGLoader();
 
     loader.load(url, function (data) {
-        const svgScale = 1 / 5000;
-        group.position.x = 0.50;
+        group.position.x = 0.47;
         group.position.y = 0.56;
-        group.position.z = 0.27;
+        group.position.z = 0.12;
         group.scale.set(svgScale,svgScale,svgScale);
         group.rotateX(Math.PI / 2);
 
