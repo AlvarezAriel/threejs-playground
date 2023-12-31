@@ -63,14 +63,14 @@ function applyShadows(scene) {
 
 
 export function updateModel(scene, state, camera) {
-    let board = scene.getObjectByName("Board");
-    if (board) {
-        board.position.y = 0.14 * state.altura;
+    let ControladorAltura = scene.getObjectByName("ControladorAltura");
+    if (ControladorAltura) {
+        ControladorAltura.position.y = 0.14 * state.altura;
     }
 
-    let woodenTable = scene.getObjectByName("WoodenTable");
-    if (woodenTable) {
-        woodenTable.scale.x = state.boardScale;
+    let WoodenTable = scene.getObjectByName("WoodenTable");
+    if (WoodenTable) {
+        WoodenTable.scale.x = state.boardScale;
     }
 
     let legs = scene.getObjectByName("Legs_01");
@@ -107,9 +107,9 @@ function loadSVG(scene, url) {
     const loader = new SVGLoader();
 
     loader.load(url, function (data) {
-        group.position.x = 0.47;
+        group.position.x = 0.55;
         group.position.y = 0.56;
-        group.position.z = 0.12;
+        group.position.z = 0.25;
         group.scale.set(svgScale,svgScale,svgScale);
         group.rotateX(Math.PI / 2);
 

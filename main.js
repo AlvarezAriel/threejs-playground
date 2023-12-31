@@ -205,7 +205,7 @@ function loadLights() {
 function loadGUI() {
     const gui = new GUI();
     gui.add(params, 'altura', 0, 2);
-    gui.add(params, 'boardScale', 0.5, 2);
+    gui.add(params, 'boardScale', 1, 1.1);
     gui.add(params, 'drawer', 0, 0.1);
     gui.add(params, 'exposure', 0, 5.0);
     gui.add(params, 'fov', 10, 100.0);
