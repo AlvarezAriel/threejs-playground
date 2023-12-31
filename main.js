@@ -15,8 +15,10 @@ import {GammaCorrectionShader, RGBELoader} from "three/addons";
 import mathNode from "three/addons/nodes/math/MathNode.js";
 import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
 import {SMAAPass} from 'three/addons/postprocessing/SMAAPass.js';
+import { SSAARenderPass } from 'three/addons/postprocessing/SSAARenderPass.js';
 import {SSRPass} from 'three/addons/postprocessing/SSRPass.js';
 import {SSAOPass} from 'three/addons/postprocessing/SSAOPass.js';
+import { TAARenderPass } from 'three/addons/postprocessing/TAARenderPass.js';
 
 const params = {
     showHdr: false,
@@ -66,7 +68,7 @@ const fxaaPass = new ShaderPass(FXAAShader);
 //fxaaPass.uniforms['resolution'].value.set(1 / (pixelRatio.x), 1 / (pixelRatio.y));
 
 const smaaPass = new SMAAPass(window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio());
-
+const ssaaRenderPass = new SSAARenderPass( scene, camera );
 const ssrPass = new SSRPass({
     renderer,
     scene,
@@ -78,6 +80,9 @@ const ssrPass = new SSRPass({
 });
 const ssaoPass = new SSAOPass(scene, camera, window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio());
 const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
+const taaRenderPass = new TAARenderPass( scene, camera );
+taaRenderPass.unbiased = false;
+
 
 // Follow order:
 // SMAA/FXAA
@@ -94,10 +99,12 @@ const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
 // Noise / Film Grain
 
 composer.addPass(renderModel);
-composer.addPass(fxaaPass);
+//composer.addPass(fxaaPass);
 composer.addPass(smaaPass);
+composer.addPass(ssaaRenderPass);
+composer.addPass(taaRenderPass );
 composer.addPass(ssrPass);
-composer.addPass(ssaoPass);
+//composer.addPass(ssaoPass);
 composer.addPass(bloomPass);
 //composer.addPass(gammaCorrectionPass);
 //composer.addPass(customPostProcessingPass);
