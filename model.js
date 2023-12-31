@@ -37,7 +37,7 @@ export function loadModel(loader, scene, showRoom = false) {
     const material = new THREE.MeshLambertMaterial({
         color: 0xFFFFFF,
         side: THREE.DoubleSide,
-        wireframe: false
+        wireframe: false,
     });
     const plane = new THREE.Mesh( geometry, material );
     geometry.rotateX(-Math.PI / 2);
