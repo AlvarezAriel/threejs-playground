@@ -2,23 +2,31 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
-import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {GUI} from 'three/addons/libs/lil-gui.module.min.js';
 import {loadModel} from "./model.js";
 import {updateModel} from "./model.js";
 import {CustomPostProcessing} from "./post-processing.js";
-import {PlaneGeometry, Vector2} from "three";
+import {PlaneGeometry, sRGBEncoding, Vector2} from "three";
 import {GammaCorrectionShader, RGBELoader} from "three/addons";
-import mathNode from "three/addons/nodes/math/MathNode.js";
-import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
 import {SMAAPass} from 'three/addons/postprocessing/SMAAPass.js';
 import { SSAARenderPass } from 'three/addons/postprocessing/SSAARenderPass.js';
 import {SSRPass} from 'three/addons/postprocessing/SSRPass.js';
 import {SSAOPass} from 'three/addons/postprocessing/SSAOPass.js';
 import { TAARenderPass } from 'three/addons/postprocessing/TAARenderPass.js';
+import {
+    BloomEffect,
+    EffectComposer,
+    EffectPass,
+    RenderPass,
+    DepthOfFieldEffect,
+    FXAAEffect,
+    NoiseEffect,
+    SMAAEffect,
+    SSAOEffect,
+    VignetteEffect, RealisticBokehEffect, ToneMappingEffect, GammaCorrectionEffect, BrightnessContrastEffect
+} from "postprocessing";
 
 const params = {
     showHdr: false,
@@ -50,22 +58,29 @@ const loader = new GLTFLoader();
 const clock = new THREE.Clock();
 const pixelRatio = new THREE.Vector2();
 
-const renderer = new THREE.WebGLRenderer({antialias: false});
+const renderer = new THREE.WebGLRenderer({
+    powerPreference: "high-performance",
+    antialias: false,
+    stencil: false,
+    depth: false
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio * 1.4);
+renderer.setPixelRatio(1.5);
 renderer.toneMappingExposure = params.exposure;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.outputEncoding = sRGBEncoding
 //renderer.shadowMap.enabled = true;
 //renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.getDrawingBufferSize(pixelRatio);
 
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
-const renderModel = new RenderPass(scene, camera);
 let composer = new EffectComposer(renderer);
+const renderModel = new RenderPass(scene, camera);
+
 const customPostProcessingPass = new ShaderPass(CustomPostProcessing);
 const bloomPass = new UnrealBloomPass(new Vector2(1024, 1024), 0.2, 0.2);
-const fxaaPass = new ShaderPass(FXAAShader);
-//fxaaPass.uniforms['resolution'].value.set(1 / (pixelRatio.x), 1 / (pixelRatio.y));
+//const fxaaPass = new ShaderPass(FXAAShader);
+//fxaaPass.uniforms['resolution'].value.set(0.01,0.01);
 
 const smaaPass = new SMAAPass(window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio());
 const ssaaRenderPass = new SSAARenderPass( scene, camera );
@@ -98,16 +113,32 @@ taaRenderPass.unbiased = false;
 // LUT / Color Grading
 // Noise / Film Grain
 
-composer.addPass(renderModel);
+//composer.addPass(renderModel);
 //composer.addPass(fxaaPass);
-composer.addPass(smaaPass);
-composer.addPass(ssaaRenderPass);
-composer.addPass(taaRenderPass );
-composer.addPass(ssrPass);
+
+//composer.addPass(fxaaPass)
+
+//composer.addPass(smaaPass);
+//composer.addPass(ssaaRenderPass);
+//composer.addPass(taaRenderPass );
 //composer.addPass(ssaoPass);
-composer.addPass(bloomPass);
+//composer.addPass(bloomPass);
 //composer.addPass(gammaCorrectionPass);
 //composer.addPass(customPostProcessingPass);
+
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new EffectPass(camera,
+    new FXAAEffect(),
+    new DepthOfFieldEffect(),
+    //new NoiseEffect(),
+    new SMAAEffect(),
+    new SSAOEffect(),
+    new BloomEffect(),
+    new VignetteEffect(),
+    new BrightnessContrastEffect(),
+    new ToneMappingEffect(),
+));
+
 
 //scene.background = new THREE.Color( 0x737977 );
 scene.environment = pmremGenerator.fromScene(new RoomEnvironment(renderer), 0.04).texture;
