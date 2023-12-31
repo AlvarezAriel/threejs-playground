@@ -31,7 +31,7 @@ import {
     GammaCorrectionEffect,
     BrightnessContrastEffect,
     SMAAPreset,
-    EdgeDetectionMode
+    EdgeDetectionMode, BlendFunction
 } from "postprocessing";
 
 const params = {
@@ -39,7 +39,7 @@ const params = {
     altura: 0.0,
     boardScale: 1.0,
     drawer: 0,
-    exposure: 0.7,
+    exposure: 1.0,
     background: "#ffffff",
     lightIntensity: 100,
     lightColor: "#ffffff",
@@ -80,30 +80,6 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.getDrawingBufferSize(pixelRatio);
 
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
-let composer = new EffectComposer(renderer);
-const renderModel = new RenderPass(scene, camera);
-
-const customPostProcessingPass = new ShaderPass(CustomPostProcessing);
-const bloomPass = new UnrealBloomPass(new Vector2(1024, 1024), 0.2, 0.2);
-//const fxaaPass = new ShaderPass(FXAAShader);
-//fxaaPass.uniforms['resolution'].value.set(0.01,0.01);
-
-const smaaPass = new SMAAPass(window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio());
-const ssaaRenderPass = new SSAARenderPass( scene, camera );
-const ssrPass = new SSRPass({
-    renderer,
-    scene,
-    camera,
-    width: innerWidth,
-    height: innerHeight,
-    groundReflector: null,
-    selects: null
-});
-const ssaoPass = new SSAOPass(scene, camera, window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio());
-const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
-const taaRenderPass = new TAARenderPass( scene, camera );
-taaRenderPass.unbiased = false;
-
 
 // Follow order:
 // SMAA/FXAA
@@ -118,33 +94,24 @@ taaRenderPass.unbiased = false;
 // Tone Mapping
 // LUT / Color Grading
 // Noise / Film Grain
-
-//composer.addPass(renderModel);
-//composer.addPass(fxaaPass);
-
-//composer.addPass(fxaaPass)
-
-//composer.addPass(smaaPass);
-//composer.addPass(ssaaRenderPass);
-//composer.addPass(taaRenderPass );
-//composer.addPass(ssaoPass);
-//composer.addPass(bloomPass);
-//composer.addPass(gammaCorrectionPass);
-//composer.addPass(customPostProcessingPass);
+let composer = new EffectComposer(renderer);
 const aa =  new FXAAEffect()
-aa.samples = 4;
+aa.samples = 2;
 aa.subpixelQuality = 1.0;
 aa.minEdgeThreshold = 1.0;
 composer.addPass(new RenderPass(scene, camera));
 composer.addPass(new EffectPass(camera,
     aa,
     //
-    //new NoiseEffect(),
     new SMAAEffect({ preset: SMAAPreset.ULTRA, edgeDetectionMode: EdgeDetectionMode.DEPTH}),
     new SSAOEffect(camera),
     new BloomEffect({radius: 2, intensity: 0.1}),
     new VignetteEffect(),
-    // new BrightnessContrastEffect(),
+    new BrightnessContrastEffect({
+        blendFunction: BlendFunction.MULTIPLY,
+        brightness: 0.8,
+        contrast: 0.1,
+    }),
     new ToneMappingEffect(),
 ));
 
