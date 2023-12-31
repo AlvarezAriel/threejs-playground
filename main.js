@@ -3,17 +3,20 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
-import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {GUI} from 'three/addons/libs/lil-gui.module.min.js';
 import {loadModel} from "./model.js";
 import {updateModel} from "./model.js";
 import {CustomPostProcessing} from "./post-processing.js";
 import {PlaneGeometry, Vector2} from "three";
-import {RGBELoader} from "three/addons";
+import {GammaCorrectionShader, RGBELoader} from "three/addons";
 import mathNode from "three/addons/nodes/math/MathNode.js";
-import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
+import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
+import {SMAAPass} from 'three/addons/postprocessing/SMAAPass.js';
+import {SSRPass} from 'three/addons/postprocessing/SSRPass.js';
+import {SSAOPass} from 'three/addons/postprocessing/SSAOPass.js';
 
 const params = {
     showHdr: false,
@@ -33,37 +36,70 @@ const params = {
 const cameraParams = {
     lookAtY: 0.25,
     offsetY: 1,
-    zoom:2.5,
+    zoom: 2.5,
 }
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( params.fov, window.innerWidth / window.innerHeight, 0.1, 1000 );
-camera.position.set(1.75,1.1,2.1);
+const camera = new THREE.PerspectiveCamera(params.fov, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(1.75, 1.1, 2.1);
 params.cameraPosition = camera.position;
 
 const loader = new GLTFLoader();
 const clock = new THREE.Clock();
+const pixelRatio = new THREE.Vector2();
 
 const renderer = new THREE.WebGLRenderer({antialias: false});
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(window.devicePixelRatio * 1.4);
 renderer.toneMappingExposure = params.exposure;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+//renderer.shadowMap.enabled = true;
+//renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.getDrawingBufferSize(pixelRatio);
 
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 const renderModel = new RenderPass(scene, camera);
 let composer = new EffectComposer(renderer);
-const customPostProcessingPass = new ShaderPass( CustomPostProcessing );
-const bloomPass = new UnrealBloomPass( new Vector2( 1024, 1024 ),  0.2,  0.2);
-const fxaaPass = new ShaderPass( FXAAShader );
-const pixelRatio = new THREE.Vector2();
-renderer.getDrawingBufferSize( pixelRatio );
-fxaaPass.uniforms['resolution'].value.set(1 / (pixelRatio.x * 0.9), 1 / (pixelRatio.y * 0.9) );
+const customPostProcessingPass = new ShaderPass(CustomPostProcessing);
+const bloomPass = new UnrealBloomPass(new Vector2(1024, 1024), 0.2, 0.2);
+const fxaaPass = new ShaderPass(FXAAShader);
+//fxaaPass.uniforms['resolution'].value.set(1 / (pixelRatio.x), 1 / (pixelRatio.y));
+
+const smaaPass = new SMAAPass(window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio());
+
+const ssrPass = new SSRPass({
+    renderer,
+    scene,
+    camera,
+    width: innerWidth,
+    height: innerHeight,
+    groundReflector: null,
+    selects: null
+});
+const ssaoPass = new SSAOPass(scene, camera, window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio());
+const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
+
+// Follow order:
+// SMAA/FXAA
+// SSR (NYI)
+// SSAO
+// DoF
+// Motion Blur (NYI)
+// Chromatic Aberration
+// Bloom
+// God Rays
+// Vignette
+// Tone Mapping
+// LUT / Color Grading
+// Noise / Film Grain
+
 composer.addPass(renderModel);
 composer.addPass(fxaaPass);
+composer.addPass(smaaPass);
+composer.addPass(ssrPass);
+composer.addPass(ssaoPass);
 composer.addPass(bloomPass);
+//composer.addPass(gammaCorrectionPass);
 //composer.addPass(customPostProcessingPass);
 
 //scene.background = new THREE.Color( 0x737977 );
@@ -91,11 +127,12 @@ controls.maxPolarAngle = Math.PI / 2;
 controls.minAzimuthAngle = Math.PI / -1.5;
 controls.maxAzimuthAngle = Math.PI / 1.5;
 
-camera.zoom=cameraParams.zoom;
-camera.position.y=cameraParams.offsetY;
-controls.target.y=cameraParams.lookAtY;
+camera.zoom = cameraParams.zoom;
+camera.position.y = cameraParams.offsetY;
+controls.target.y = cameraParams.lookAtY;
 camera.updateProjectionMatrix();
 let hdrTexture = null;
+
 function loadHDR() {
     new RGBELoader()
         .setPath('./')
@@ -103,12 +140,13 @@ function loadHDR() {
             texture.mapping = THREE.EquirectangularReflectionMapping;
             let envMap = pmremGenerator.fromEquirectangular(texture).texture;
 
-            if(params.showHdr) {
-            if(params.showHdr) {
-                hdrTexture = texture;
-                scene.background = texture;
-            } else {
-                scene.background = new THREE.Color(params.background);}
+            if (params.showHdr) {
+                if (params.showHdr) {
+                    hdrTexture = texture;
+                    scene.background = texture;
+                } else {
+                    scene.background = new THREE.Color(params.background);
+                }
             }
             scene.environment = envMap;
 
@@ -121,12 +159,13 @@ function loadHDR() {
     pmremGenerator.compileCubemapShader();
 }
 
-const spotLight = new THREE.SpotLight( params.lightColor,  params.lightIntensity);
-const spotLightHelper = new THREE.SpotLightHelper( spotLight );
+const spotLight = new THREE.SpotLight(params.lightColor, params.lightIntensity);
+const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+
 function loadLights() {
 
-    spotLight.position.set( -3, 3, 0 );
-    spotLight.map = new THREE.TextureLoader().load( "fabric_texture.jpg" );
+    spotLight.position.set(-3, 3, 0);
+    spotLight.map = new THREE.TextureLoader().load("fabric_texture.jpg");
     spotLight.angle = 10;
     spotLight.castShadow = true;
     spotLight.distance = 20;
@@ -137,14 +176,14 @@ function loadLights() {
 
     spotLight.shadow.camera.near = 0.5; // default
     spotLight.shadow.camera.far = 500; // default
-    spotLight.shadow.camera.fov =  90;
+    spotLight.shadow.camera.fov = 90;
     spotLight.shadow.focus = 1;
 
-    spotLight.lookAt(0,0,0);
+    spotLight.lookAt(0, 0, 0);
 
     spotLightHelper.color = 0xff0000;
-    scene.add( spotLight );
-    scene.add( spotLightHelper );
+    scene.add(spotLight);
+    scene.add(spotLightHelper);
 }
 
 function loadGUI() {
@@ -155,13 +194,13 @@ function loadGUI() {
     gui.add(params, 'exposure', 0, 5.0);
     gui.add(params, 'fov', 10, 100.0);
     gui.addColor(params, 'background').onChange(function (colorValue) {
-        if(!params.showHdr) {
+        if (!params.showHdr) {
             scene.background = new THREE.Color(colorValue);
         }
     });
     gui.add(params, 'showHdr').onChange(function (show) {
-        if(!params.showHdr) {
-            if(show) {
+        if (!params.showHdr) {
+            if (show) {
                 scene.background = hdrTexture;
                 pmremGenerator.compileCubemapShader();
             } else {
@@ -170,7 +209,7 @@ function loadGUI() {
         }
     });
 
-    const folder = gui.addFolder( 'Light' );
+    const folder = gui.addFolder('Light');
     folder.add(params, 'lightIntensity', 0, 500.0).onChange(function (value) {
         spotLight.intensity = value;
     });
@@ -184,7 +223,7 @@ function loadGUI() {
         bloomPass.radius = value;
     });
 
-    const cameraFolder = gui.addFolder( 'Camera' );
+    const cameraFolder = gui.addFolder('Camera');
     cameraFolder.add(cameraParams, 'offsetY', -1, 2.5).onChange(function (value) {
         camera.position.y = value;
     });
@@ -225,7 +264,7 @@ function animate() {
 
 function update(delta) {
     controls.update(delta);
-    if(params.showHdr) {
+    if (params.showHdr) {
         scene.background = hdrTexture;
     } else {
         scene.background = new THREE.Color(params.background);
@@ -240,7 +279,7 @@ function update(delta) {
     camera.updateProjectionMatrix();
 
     const time = performance.now() / 3000;
-    spotLight.position.z = Math.cos( time ) * 2.5;
+    spotLight.position.z = Math.cos(time) * 2.5;
 
     spotLightHelper.update();
 }
@@ -249,8 +288,6 @@ function render(delta) {
     //renderer.clear();
     composer.render(delta);
 }
-
-
 
 
 init();

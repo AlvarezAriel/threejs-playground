@@ -42,7 +42,7 @@ function applyShadows(scene) {
 
             child.castShadow = true;
 
-            child.receiveShadow = true;
+            child.receiveShadow = false;
 
         }
     });
@@ -75,9 +75,9 @@ export function updateModel(scene, state) {
 
 
 function loadSVG(scene, url) {
-    const helper = new THREE.GridHelper(160, 10, 0x8d8d8d, 0xc1c1c1);
-    helper.rotation.x = Math.PI / 2;
-    scene.add(helper);
+    // const helper = new THREE.GridHelper(160, 10, 0x8d8d8d, 0xc1c1c1);
+    // helper.rotation.x = Math.PI / 2;
+    // scene.add(helper);
 
     const loader = new SVGLoader();
 
