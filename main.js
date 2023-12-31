@@ -25,7 +25,13 @@ import {
     NoiseEffect,
     SMAAEffect,
     SSAOEffect,
-    VignetteEffect, RealisticBokehEffect, ToneMappingEffect, GammaCorrectionEffect, BrightnessContrastEffect
+    VignetteEffect,
+    RealisticBokehEffect,
+    ToneMappingEffect,
+    GammaCorrectionEffect,
+    BrightnessContrastEffect,
+    SMAAPreset,
+    EdgeDetectionMode
 } from "postprocessing";
 
 const params = {
@@ -34,7 +40,7 @@ const params = {
     boardScale: 1.0,
     drawer: 0,
     exposure: 1,
-    background: "#cfcfcf",
+    background: "#ffffff",
     lightIntensity: 100,
     lightColor: "#ffffff",
     fov: 56,
@@ -125,17 +131,20 @@ taaRenderPass.unbiased = false;
 //composer.addPass(bloomPass);
 //composer.addPass(gammaCorrectionPass);
 //composer.addPass(customPostProcessingPass);
-
+const aa =  new FXAAEffect()
+aa.samples = 4;
+aa.subpixelQuality = 1.0;
+aa.minEdgeThreshold = 1.0;
 composer.addPass(new RenderPass(scene, camera));
 composer.addPass(new EffectPass(camera,
-    new FXAAEffect(),
-    new DepthOfFieldEffect(),
+    aa,
+    //
     //new NoiseEffect(),
-    new SMAAEffect(),
+    new SMAAEffect({ preset: SMAAPreset.ULTRA, edgeDetectionMode: EdgeDetectionMode.DEPTH}),
     new SSAOEffect(),
-    new BloomEffect(),
+    new BloomEffect({radius: 4, intensity: 0.3}),
     new VignetteEffect(),
-    new BrightnessContrastEffect(),
+    // new BrightnessContrastEffect(),
     new ToneMappingEffect(),
 ));
 
