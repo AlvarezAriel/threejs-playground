@@ -186,6 +186,7 @@ function loadLights() {
     spotLight.castShadow = true;
     spotLight.distance = 12;
 
+
     renderer.shadowMap.enabled = true;
     spotLight.shadow.mapSize.width = 2048*2;
     spotLight.shadow.mapSize.height = 2048*2;
@@ -194,9 +195,7 @@ function loadLights() {
     spotLight.shadow.camera.far = 50; // default
     spotLight.shadow.camera.fov = params.fov;
     spotLight.shadow.focus = 1;
-
     spotLight.lookAt(0, 0, 0);
-
     spotLightHelper.color = 0xff0000;
     scene.add(spotLight);
     //scene.add(spotLightHelper);
@@ -205,7 +204,7 @@ function loadLights() {
 function loadGUI() {
     const gui = new GUI();
     gui.add(params, 'altura', 0, 2);
-    gui.add(params, 'boardScale', 0.5, 2);
+    gui.add(params, 'boardScale', 1, 1.1);
     gui.add(params, 'drawer', 0, 0.1);
     gui.add(params, 'exposure', 0, 5.0);
     gui.add(params, 'fov', 10, 100.0);

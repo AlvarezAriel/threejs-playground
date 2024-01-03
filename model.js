@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {SVGLoader} from 'three/addons/loaders/SVGLoader.js';
-import {MathUtils, MeshLambertMaterial, MultiplyBlending} from "three";
+import {MathUtils} from "three";
 
 const guiData = {
     currentURL: 'boton_elevador.svg',
@@ -82,10 +82,10 @@ function applyShadows(scene) {
 }
 
 export function updateModel(scene, state, camera) {
-    let board = scene.getObjectByName("Board");
-    if (board) {
+    let controladorAltura = scene.getObjectByName("ControladorAltura");
+    if (controladorAltura) {
         let deformLight = 0.02;
-        board.position.y = 0.14 * state.altura;
+        controladorAltura.position.y = 0.14 * state.altura;
         // shadowPlane.scale.x = 1 + deformLight * state.altura;
         // shadowPlane.scale.z = 1 + deformLight/2 * state.altura;
         // shadowPlane.position.x = (deformLight / 2) * state.altura;
@@ -133,9 +133,9 @@ function loadSVG(scene, url) {
     const loader = new SVGLoader();
 
     loader.load(url, function (data) {
-        group.position.x = 0.47;
+        group.position.x = 0.55;
         group.position.y = 0.56;
-        group.position.z = 0.12;
+        group.position.z = 0.25;
         group.scale.set(svgScale,svgScale,svgScale);
         group.rotateX(Math.PI / 2);
 
