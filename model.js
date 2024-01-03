@@ -42,8 +42,9 @@ export function loadModel(loader, scene, showRoom = false) {
     const geometry = new THREE.PlaneGeometry(4, 4);
     geometry.rotateX(-Math.PI / 2);
 
-    textureUp = new THREE.TextureLoader().load('elevado.png');
-    textureDown = new THREE.TextureLoader().load('base.png');
+
+    textureUp = new THREE.TextureLoader().load('shadowv3.jpg');
+    textureDown = new THREE.TextureLoader().load('shadowv3.jpg');
     const material = new THREE.MeshBasicMaterial({
         map: textureUp,
         //alphaMap: textureUp,
