@@ -254,7 +254,7 @@ function loadGUI() {
 function init() {
     loadHDR();
     loadGUI();
-    loadLights();
+    //loadLights();
     loadModel(loader, scene);
 }
 

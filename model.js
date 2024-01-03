@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {SVGLoader} from 'three/addons/loaders/SVGLoader.js';
-import {MathUtils, MeshLambertMaterial} from "three";
+import {MathUtils, MeshLambertMaterial, MultiplyBlending} from "three";
 
 const guiData = {
     currentURL: 'boton_elevador.svg',
@@ -11,6 +11,10 @@ const guiData = {
 };
 const group = new THREE.Group();
 const svgScale = 1 / 5000;
+let textureUp;
+let textureDown;
+let shadowPlane;
+let secondShadow;
 
 export function loadModel(loader, scene, showRoom = false) {
     loader.load('Desk.glb', function (gltf) {
@@ -32,17 +36,33 @@ export function loadModel(loader, scene, showRoom = false) {
         });
     }
 
-    const geometry = new THREE.PlaneGeometry( 10, 10 );
-
-    const material = new THREE.MeshLambertMaterial({
-        color: 0xFFFFFF,
-        side: THREE.DoubleSide,
-        wireframe: false
-    });
-    const plane = new THREE.Mesh( geometry, material );
+    const geometry = new THREE.PlaneGeometry( 4, 4 );
     geometry.rotateX(-Math.PI / 2);
-    plane.receiveShadow = true;
-    scene.add( plane );
+
+    textureUp = new THREE.TextureLoader().load('elevado.png' );
+    textureDown = new THREE.TextureLoader().load('base.png' );
+    const material = new THREE.MeshBasicMaterial({
+        //map: textureUp,
+        //alphaMap: textureUp,
+        transparent: true,
+        lightMap: textureUp,
+    })
+    material.opacity = 0;
+    shadowPlane = new THREE.Mesh( geometry, material );
+    shadowPlane.receiveShadow = false;
+    console.log("Shadow plane: ", shadowPlane);
+    scene.add( shadowPlane );
+
+    const secondShadowMaterial = new THREE.MeshBasicMaterial({
+        //map: textureUp,
+        //alphaMap: textureUp,
+        transparent: true,
+        lightMap: textureDown,
+    })
+    secondShadow = new THREE.Mesh( geometry, secondShadowMaterial );
+    secondShadow.receiveShadow = false;
+    console.log("secondShadow plane: ", secondShadow);
+    scene.add( secondShadow );
 
     loadSVG(scene, guiData.currentURL);
 
@@ -53,19 +73,25 @@ function applyShadows(scene) {
 
         if (child.isMesh) {
 
-            child.castShadow = true;
+            child.castShadow = false;
 
-            child.receiveShadow = true;
+            child.receiveShadow = false;
 
         }
     });
 }
 
-
 export function updateModel(scene, state, camera) {
     let board = scene.getObjectByName("Board");
     if (board) {
+        let deformLight = 0.02;
         board.position.y = 0.14 * state.altura;
+        // shadowPlane.scale.x = 1 + deformLight * state.altura;
+        // shadowPlane.scale.z = 1 + deformLight/2 * state.altura;
+        // shadowPlane.position.x = (deformLight / 2) * state.altura;
+        // shadowPlane.position.z = -(deformLight / 2) * state.altura;
+        shadowPlane.material.opacity = state.altura;
+        secondShadow.material.opacity = 1 - state.altura;
     }
 
     let woodenTable = scene.getObjectByName("WoodenTable");
