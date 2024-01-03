@@ -5,7 +5,7 @@ import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {GUI} from 'three/addons/libs/lil-gui.module.min.js';
-import {loadModel} from "./model.js";
+import {detectModelInteraction, loadModel} from "./model.js";
 import {updateModel} from "./model.js";
 import {CustomPostProcessing} from "./post-processing.js";
 import {PlaneGeometry, sRGBEncoding, Vector2} from "three";
@@ -306,4 +306,5 @@ function render(delta) {
 
 
 init();
+detectModelInteraction(scene, params, camera);
 animate();

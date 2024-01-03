@@ -127,6 +127,24 @@ export function updateModel(scene, state, camera) {
     group.lookAt(state.cameraPosition);
 }
 
+const raycaster = new THREE.Raycaster()
+const mouse = new THREE.Vector2()
+let intersectsSvg = false;
+
+export function detectModelInteraction(scene, state, camera) {
+    window.addEventListener('pointermove', (e) => {
+        mouse.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1)
+        raycaster.setFromCamera(mouse, camera);
+        intersectsSvg = raycaster.intersectObject(group).length != 0;
+    })
+
+    window.addEventListener('click', (e) => {
+        if(intersectsSvg) {
+            state.altura = THREE.MathUtils.clamp(state.altura + 0.1, 0, 1);
+        }
+    })
+}
+
 function loadSVG(scene, url) {
     // const helper = new THREE.GridHelper(160, 10, 0x8d8d8d, 0xc1c1c1);
     // helper.rotation.x = Math.PI / 2;
