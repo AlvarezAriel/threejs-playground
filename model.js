@@ -125,6 +125,13 @@ export function updateModel(scene, state, camera) {
     group.position.y = svgPosition.y + 0.14 * state.altura;
     group.scale.set(scale,scale,scale);
     group.lookAt(state.cameraPosition);
+
+    if(state.animatingAltura !== 0) {
+        state.altura = THREE.MathUtils.clamp(state.altura + state.animatingAltura, 0, 1);
+        if(state.altura === 0 || state.altura === 1) {
+            state.animatingAltura = 0;
+        }
+    }
 }
 
 const raycaster = new THREE.Raycaster()
@@ -139,6 +146,13 @@ export function detectModelInteraction(scene, state, camera) {
     })
 
     window.addEventListener('click', (e) => {
+        if(!state.animatingAltura) {
+            if(state.altura === 0) {
+                state.animatingAltura = 0.03;
+            } else {
+                state.animatingAltura = -0.03;
+            }
+        }
         if(intersectsSvg) {
             state.altura = THREE.MathUtils.clamp(state.altura + 0.1, 0, 1);
         }

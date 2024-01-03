@@ -37,6 +37,7 @@ import {
 const params = {
     showHdr: false,
     altura: 0.0,
+    animatingAltura: 0,
     boardScale: 1.0,
     drawer: 0,
     exposure: 1.0,
