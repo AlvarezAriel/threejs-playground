@@ -12,6 +12,7 @@
     "vite": "^5.0.8"
   },
   "dependencies": {
+    "@tweenjs/tween.js": "^21.0.0",
     "postprocessing": "^6.34.1",
     "three": "^0.160.0",
     "three-shader-fxaa": "^5.1.1"

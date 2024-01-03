@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {SVGLoader} from 'three/addons/loaders/SVGLoader.js';
 import {MathUtils, Vector3} from "three";
+import TWEEN from "@tweenjs/tween.js";
 
 const guiData = {
     currentURL: 'boton_elevador.svg',
@@ -38,11 +39,11 @@ export function loadModel(loader, scene, showRoom = false) {
         });
     }
 
-    const geometry = new THREE.PlaneGeometry( 4, 4 );
+    const geometry = new THREE.PlaneGeometry(4, 4);
     geometry.rotateX(-Math.PI / 2);
 
-    textureUp = new THREE.TextureLoader().load('elevado.png' );
-    textureDown = new THREE.TextureLoader().load('base.png' );
+    textureUp = new THREE.TextureLoader().load('elevado.png');
+    textureDown = new THREE.TextureLoader().load('base.png');
     const material = new THREE.MeshBasicMaterial({
         map: textureUp,
         //alphaMap: textureUp,
@@ -50,10 +51,10 @@ export function loadModel(loader, scene, showRoom = false) {
         //lightMap: textureDown,
     })
     material.opacity = 1;
-    shadowPlane = new THREE.Mesh( geometry, material );
+    shadowPlane = new THREE.Mesh(geometry, material);
     shadowPlane.receiveShadow = false;
     console.log("Shadow plane: ", shadowPlane);
-    scene.add( shadowPlane );
+    scene.add(shadowPlane);
 
     // const secondShadowMaterial = new THREE.MeshBasicMaterial({
     //     //map: textureUp,
@@ -88,10 +89,10 @@ export function updateModel(scene, state, camera) {
     if (controladorAltura) {
         let deformLight = 0.1;
         controladorAltura.position.y = 0.14 * state.altura;
-         shadowPlane.scale.x = 1 + deformLight * state.altura;
-         shadowPlane.scale.z = 1 + deformLight/4 * state.altura;
-         shadowPlane.position.x = (deformLight / 2) * state.altura;
-         shadowPlane.position.z = -(deformLight / 4) * state.altura;
+        shadowPlane.scale.x = 1 + deformLight * state.altura;
+        shadowPlane.scale.z = 1 + deformLight / 4 * state.altura;
+        shadowPlane.position.x = (deformLight / 2) * state.altura;
+        shadowPlane.position.z = -(deformLight / 4) * state.altura;
         //shadowPlane.material.opacity = state.altura;
         //secondShadow.material.opacity = 1 - state.altura;
     }
@@ -123,15 +124,17 @@ export function updateModel(scene, state, camera) {
     );
 
     group.position.y = svgPosition.y + 0.14 * state.altura;
-    group.scale.set(scale,scale,scale);
+    group.scale.set(scale, scale, scale);
     group.lookAt(state.cameraPosition);
 
-    if(state.animatingAltura !== 0) {
-        state.altura = THREE.MathUtils.clamp(state.altura + state.animatingAltura, 0, 1);
-        if(state.altura === 0 || state.altura === 1) {
-            state.animatingAltura = 0;
-        }
-    }
+    TWEEN.update();
+
+    // if(state.animatingAltura !== 0) {
+    //     state.altura = THREE.MathUtils.clamp(state.altura + state.animatingAltura, 0, 1);
+    //     if(state.altura === 0 || state.altura === 1) {
+    //         state.animatingAltura = 0;
+    //     }
+    // }
 }
 
 const raycaster = new THREE.Raycaster()
@@ -146,12 +149,17 @@ export function detectModelInteraction(scene, state, camera) {
     })
 
     window.addEventListener('click', (e) => {
-        if(!state.animatingAltura && intersectsSvg) {
-            if(state.altura === 0) {
-                state.animatingAltura = 0.03;
+        if (intersectsSvg) {
+            let target;
+            if (state.altura > 0) {
+                target = 0;
             } else {
-                state.animatingAltura = -0.03;
+                target = 1;
             }
+            let tween = new TWEEN.Tween(state);
+            tween.easing(TWEEN.Easing.Quadratic.InOut);
+            tween.to({altura: target}, 1000);
+            tween.start();
         }
     })
 }
@@ -167,7 +175,7 @@ function loadSVG(scene, url) {
         group.position.x = svgPosition.x;
         group.position.y = svgPosition.y;
         group.position.z = svgPosition.z;
-        group.scale.set(svgScale,svgScale,svgScale);
+        group.scale.set(svgScale, svgScale, svgScale);
         group.rotateX(Math.PI / 2);
 
         let renderOrder = 0;
