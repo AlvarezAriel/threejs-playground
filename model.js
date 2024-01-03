@@ -45,24 +45,24 @@ export function loadModel(loader, scene, showRoom = false) {
         //map: textureUp,
         //alphaMap: textureUp,
         transparent: true,
-        lightMap: textureUp,
+        lightMap: textureDown,
     })
-    material.opacity = 0;
+    material.opacity = 1;
     shadowPlane = new THREE.Mesh( geometry, material );
     shadowPlane.receiveShadow = false;
     console.log("Shadow plane: ", shadowPlane);
     scene.add( shadowPlane );
 
-    const secondShadowMaterial = new THREE.MeshBasicMaterial({
-        //map: textureUp,
-        //alphaMap: textureUp,
-        transparent: true,
-        lightMap: textureDown,
-    })
-    secondShadow = new THREE.Mesh( geometry, secondShadowMaterial );
-    secondShadow.receiveShadow = false;
-    console.log("secondShadow plane: ", secondShadow);
-    scene.add( secondShadow );
+    // const secondShadowMaterial = new THREE.MeshBasicMaterial({
+    //     //map: textureUp,
+    //     //alphaMap: textureUp,
+    //     transparent: true,
+    //     lightMap: textureDown,
+    // })
+    // secondShadow = new THREE.Mesh( geometry, secondShadowMaterial );
+    // secondShadow.receiveShadow = false;
+    // console.log("secondShadow plane: ", secondShadow);
+    // scene.add( secondShadow );
 
     loadSVG(scene, guiData.currentURL);
 
@@ -84,14 +84,14 @@ function applyShadows(scene) {
 export function updateModel(scene, state, camera) {
     let controladorAltura = scene.getObjectByName("ControladorAltura");
     if (controladorAltura) {
-        let deformLight = 0.02;
+        let deformLight = 0.1;
         controladorAltura.position.y = 0.14 * state.altura;
-        // shadowPlane.scale.x = 1 + deformLight * state.altura;
-        // shadowPlane.scale.z = 1 + deformLight/2 * state.altura;
-        // shadowPlane.position.x = (deformLight / 2) * state.altura;
-        // shadowPlane.position.z = -(deformLight / 2) * state.altura;
-        shadowPlane.material.opacity = state.altura;
-        secondShadow.material.opacity = 1 - state.altura;
+         shadowPlane.scale.x = 1 + deformLight * state.altura;
+         shadowPlane.scale.z = 1 + deformLight/4 * state.altura;
+         shadowPlane.position.x = (deformLight / 2) * state.altura;
+         shadowPlane.position.z = -(deformLight / 4) * state.altura;
+        //shadowPlane.material.opacity = state.altura;
+        //secondShadow.material.opacity = 1 - state.altura;
     }
 
     let woodenTable = scene.getObjectByName("WoodenTable");
