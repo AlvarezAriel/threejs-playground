@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {SVGLoader} from 'three/addons/loaders/SVGLoader.js';
-import {MathUtils} from "three";
+import {MathUtils, Vector3} from "three";
 
 const guiData = {
     currentURL: 'boton_elevador.svg',
@@ -11,6 +11,8 @@ const guiData = {
 };
 const group = new THREE.Group();
 const svgScale = 1 / 5000;
+const svgPosition = new Vector3(0.55, 0.56, 0.25);
+
 let textureUp;
 let textureDown;
 let shadowPlane;
@@ -120,10 +122,10 @@ export function updateModel(scene, state, camera) {
         svgScale * 2,
     );
 
+    group.position.y = svgPosition.y + 0.14 * state.altura;
     group.scale.set(scale,scale,scale);
     group.lookAt(state.cameraPosition);
 }
-
 
 function loadSVG(scene, url) {
     // const helper = new THREE.GridHelper(160, 10, 0x8d8d8d, 0xc1c1c1);
@@ -133,9 +135,9 @@ function loadSVG(scene, url) {
     const loader = new SVGLoader();
 
     loader.load(url, function (data) {
-        group.position.x = 0.55;
-        group.position.y = 0.56;
-        group.position.z = 0.25;
+        group.position.x = svgPosition.x;
+        group.position.y = svgPosition.y;
+        group.position.z = svgPosition.z;
         group.scale.set(svgScale,svgScale,svgScale);
         group.rotateX(Math.PI / 2);
 
