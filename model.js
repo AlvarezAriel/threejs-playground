@@ -146,15 +146,12 @@ export function detectModelInteraction(scene, state, camera) {
     })
 
     window.addEventListener('click', (e) => {
-        if(!state.animatingAltura) {
+        if(!state.animatingAltura && intersectsSvg) {
             if(state.altura === 0) {
                 state.animatingAltura = 0.03;
             } else {
                 state.animatingAltura = -0.03;
             }
-        }
-        if(intersectsSvg) {
-            state.altura = THREE.MathUtils.clamp(state.altura + 0.1, 0, 1);
         }
     })
 }
