@@ -42,10 +42,10 @@ export function loadModel(loader, scene, showRoom = false) {
     textureUp = new THREE.TextureLoader().load('elevado.png' );
     textureDown = new THREE.TextureLoader().load('base.png' );
     const material = new THREE.MeshBasicMaterial({
-        //map: textureUp,
+        map: textureUp,
         //alphaMap: textureUp,
         transparent: true,
-        lightMap: textureDown,
+        //lightMap: textureDown,
     })
     material.opacity = 1;
     shadowPlane = new THREE.Mesh( geometry, material );
